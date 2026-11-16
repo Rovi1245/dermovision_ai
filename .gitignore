@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Pytest / Testing caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE configs
+.vscode/
+.idea/
+
+# Large Model Weights (Excluded from Git due to GitHub 100MB file limit)
+# Note: The codebase automatically downloads weights from Hugging Face if not found locally.
+*.pt
+*.safetensors
+models/weights/ham10000_vit/model.safetensors
+yolo11n.pt
+
+# Log files and runtime caches
+*.log
+/tmp/
+
+# Environment variables, credentials, and secrets (STRICT)
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.secret
+secrets/
