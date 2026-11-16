@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dermovision v2.4 - Clinical Dermoscopy Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .vignette-circle {
+      box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.85), 0 20px 40px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- 1. TOP NAVBAR -->
+  <header class="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">✦</div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-lg text-slate-900 tracking-tight">Dermovision</span>
+          <span class="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">v2.4 · Explainable 2nd Reader</span>
+        </div>
+        <p class="text-[11px] text-slate-500">Clinical Epiluminescence Microscopy AI</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-1 text-xs bg-slate-100 p-1 rounded-lg">
+        <span class="text-slate-400 px-2 font-medium">ATLAS:</span>
+        <button onclick="loadPresetCase('PT-94812')" class="px-2.5 py-1 bg-white rounded shadow-sm text-indigo-600 font-medium hover:bg-slate-50">Melanoma (PT-94812)</button>
+        <button onclick="loadPresetCase('ISIC_0024468')" class="px-2.5 py-1 text-slate-600 hover:text-indigo-600 font-medium">Actinic Keratosis (ISIC_0024468)</button>
+      </div>
+      
+      <label class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer shadow-sm flex items-center space-x-1.5 transition">
+        <span>↑ Ingest Lesion Image</span>
+        <input type="file" id="imageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+      </label>
+    </div>
+  </header>
+
+  <!-- 2. PATIENT METADATA SUB-HEADER -->
+  <div class="flex items-center justify-between px-6 py-2.5 bg-slate-100 border-b border-slate-200 text-xs">
+    <div class="flex items-center space-x-6 text-slate-600">
+      <div><span class="font-bold text-slate-800">Patient:</span> <span id="metaPatient">PT-94812 (54y · Male)</span></div>
+      <div><span class="font-bold text-slate-800">Location:</span> <span id="metaLocation">Upper Back (Left Scapular Region)</span></div>
+      <div><span class="font-bold text-slate-800">Phototype:</span> <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono">Type II</span></div>
+      <div><span class="font-bold text-slate-800">Mode:</span> <span class="text-indigo-600 font-medium">Polarized Dermoscopy</span></div>
+    </div>
+    <div id="riskBadge" class="bg-red-50 text-red-700 border border-red-200 font-semibold px-3 py-1 rounded-full flex items-center space-x-1.5 shadow-sm">
+      <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+      <span id="riskBadgeText">High Risk · 91.4%</span>
+    </div>
+  </div>
+
+  <!-- 3. MAIN WORKSPACE GRID -->
+  <main class="grid grid-cols-12 gap-6 p-6 flex-1">
+    
+    <!-- LEFT PANEL: EPILUMINESCENCE DERMOSCOPY CANVAS -->
+    <div class="col-span-12 lg:col-span-6 bg-stone-900 rounded-2xl p-6 relative flex flex-col items-center justify-center min-h-[580px] shadow-lg">
+      <div class="absolute top-4 left-4 flex items-center space-x-2 text-xs text-white bg-black/60 backdrop-blur px-3 py-1.5 rounded-full border border-stone-700">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Epiluminescence Microscopy | ∅ 8.4 mm</span>
+      </div>
+
+      <div class="absolute top-4 right-4 flex items-center space-x-2 text-xs text-white bg-black/60 backdrop-blur px-3 py-1.5 rounded-lg border border-stone-700">
+        <span>Overlay Opacity:</span>
+        <input type="range" id="opacitySlider" min="0.1" max="0.9" step="0.05" value="0.35" onchange="updateOpacity(this.value)" class="w-20 accent-indigo-500 cursor-pointer">
+      </div>
+
+      <!-- Lesion Viewport Circular Scope -->
+      <div class="relative w-[460px] h-[460px] rounded-full overflow-hidden border-8 border-stone-800 vignette-circle bg-amber-100 flex items-center justify-center">
+        <!-- Background Dermoscopy Texture Canvas -->
+        <canvas id="lesionCanvas" width="460" height="460" class="w-full h-full object-cover"></canvas>
+
+        <!-- SVG Vector Overlay for Microfeatures -->
+        <svg id="featureSvg" class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1 1" preserveAspectRatio="none">
+          <!-- Dynamically generated rects -->
+        </svg>
+
+        <!-- HTML Badges -->
+        <div id="badgeContainer" class="absolute inset-0 pointer-events-none"></div>
+      </div>
+
+      <div class="mt-4 text-center">
+        <p class="text-[11px] text-stone-400">Sub-millimeter feature localization calibrated across Fitzpatrick skin phototypes I–VI.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: CLINICAL DECISION SUPPORT & TABS -->
+    <div class="col-span-12 lg:col-span-6 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col justify-between">
+      <div>
+        <!-- TAB BAR -->
+        <div class="flex border-b border-slate-200 pb-3 mb-5 space-x-6">
+          <button id="tabBtn1" onclick="switchTab('assessment')" class="text-sm font-bold pb-1 border-b-2 border-indigo-600 text-indigo-600 flex items-center space-x-1.5">
+            <span>⚡ Assessment & Features</span>
+          </button>
+          <button id="tabBtn2" onclick="switchTab('rules')" class="text-sm font-semibold pb-1 text-slate-500 hover:text-slate-800 flex items-center space-x-1.5">
+            <span>📖 7-Point & ABCD Rules</span>
+          </button>
+          <button id="tabBtn3" onclick="switchTab('report')" class="text-sm font-semibold pb-1 text-slate-500 hover:text-slate-800 flex items-center space-x-1.5">
+            <span>📄 Report & Sign-off</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: ASSESSMENT & GROUNDED FEATURES -->
+        <div id="tabAssessment" class="space-y-5">
+          <!-- Primary Impression Card -->
+          <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Primary Assessment (Second Reader)</span>
+              <span id="malignancyAlert" class="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">
+                ⚠ High Malignancy Suspicion
+              </span>
+            </div>
+
+            <div class="flex items-baseline justify-between mt-2">
+              <h2 id="primaryDiagName" class="text-xl font-black text-slate-900">Malignant Melanoma</h2>
+              <div class="text-right">
+                <span id="primaryConfidence" class="text-2xl font-black text-indigo-600">91.4%</span>
+                <p class="text-[10px] text-slate-400 uppercase font-semibold">Confidence</p>
+              </div>
+            </div>
+
+            <div class="w-full bg-slate-200 h-2 rounded-full mt-3 overflow-hidden">
+              <div id="confidenceBar" class="bg-red-500 h-full rounded-full transition-all duration-500" style="width: 91.4%"></div>
+            </div>
+          </div>
+
+          <!-- Clinical Recommendation Box (Rx) -->
+          <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4">
+            <div class="flex items-center space-x-2 text-indigo-900 text-xs font-bold uppercase tracking-wider mb-1">
+              <span class="bg-indigo-600 text-white px-1.5 py-0.2 rounded text-[10px]">Rx</span>
+              <span>Clinical Recommendation</span>
+            </div>
+            <p id="rxRecommendation" class="text-xs text-indigo-950 font-medium leading-relaxed">
+              URGENT EXCISIONAL BIOPSY: Complete elliptical excision with 2 to 3 mm narrow safety margin for histopathology.
+            </p>
+          </div>
+
+          <!-- Differential Diagnoses Distribution -->
+          <div>
+            <h3 class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-2.5">Differential Diagnoses Distribution (HAM10000)</h3>
+            <div id="differentialList" class="space-y-2"></div>
+          </div>
+
+          <!-- Interactive Feature Toggles -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs uppercase tracking-wider text-slate-400 font-bold">Grounded Dermoscopic Features</h3>
+              <span class="text-[11px] text-indigo-600 font-medium">Uncheck to toggle test-time recalculation</span>
+            </div>
+            <div id="featureToggleList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- TAB 2: 7-POINT & ABCD RULES -->
+        <div id="tabRules" class="hidden space-y-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-900">Argenziano 7-Point Checklist</h3>
+              <span id="rulesScoreBadge" class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Score: 5 Points</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Threshold: Score >= 3 triggers biopsy. Major criteria = 2 points, Minor criteria = 1 point.</p>
+            <div id="sevenPointBreakdown" class="space-y-1 text-xs"></div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-900">Stolz Total Dermoscopy Score (ABCD)</h3>
+              <span id="abcdScoreBadge" class="text-xs font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">TDS: 6.2</span>
+            </div>
+            <p id="abcdInterpretation" class="text-xs text-slate-600 font-medium">Highly Suspicious for Malignant Melanoma (TDS > 5.45).</p>
+          </div>
+        </div>
+
+        <!-- TAB 3: REPORT & SIGN-OFF -->
+        <div id="tabReport" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">Auditable Clinical Record</span>
+            <button onclick="copyReport()" class="text-xs text-indigo-600 hover:underline font-medium">Copy Text</button>
+          </div>
+          <textarea id="reportTextArea" readonly class="w-full h-80 text-xs font-mono p-3 bg-slate-900 text-slate-200 rounded-xl border border-slate-800 resize-none focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <!-- FOOTER ACTIONS -->
+      <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] text-slate-400">CDSCO SaMD Class B & HIPAA / FHIR Compliant</span>
+        <div class="flex space-x-2">
+          <button onclick="exportFhirJson()" class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">
+            Export FHIR JSON
+          </button>
+          <button onclick="signOffCase()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+            Approve & Sign Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentCaseData = null;
+    let overlayOpacity = 0.35;
+
+    async function loadPresetCase(caseId) {
+      try {
+        const res = await fetch(`/api/v1/dermoscopy/samples/${caseId}`);
+        if (!res.ok) throw new Error("Failed to load sample");
+        const data = await res.json();
+        renderCase(data);
+      } catch (err) {
+        console.error(err);
+        alert("Error loading case: " + err.message);
+      }
+    }
+
+    function renderCase(data) {
+      currentCaseData = data;
+
+      // Metadata
+      document.getElementById('metaPatient').innerText = `${data.patient_id} (${data.patient_demographics})`;
+      document.getElementById('metaLocation').innerText = data.anatomic_site;
+      document.getElementById('riskBadgeText').innerText = `${data.risk_tier} · ${data.primary_diagnosis.confidence_percent}%`;
+      
+      // Assessment Tab
+      document.getElementById('primaryDiagName').innerText = data.primary_diagnosis.condition_name;
+      document.getElementById('primaryConfidence').innerText = `${data.primary_diagnosis.confidence_percent}%`;
+      document.getElementById('confidenceBar').style.width = `${data.primary_diagnosis.confidence_percent}%`;
+      document.getElementById('rxRecommendation').innerText = data.clinical_recommendation;
+
+      // Differentials
+      const diffContainer = document.getElementById('differentialList');
+      diffContainer.innerHTML = '';
+      data.differentials.slice(0, 4).forEach((d, i) => {
+        const item = document.createElement('div');
+        item.className = 'text-xs';
+        item.innerHTML = `
+          <div class="flex justify-between mb-1">
+            <span class="${i === 0 ? 'font-bold text-slate-900' : 'text-slate-600'}">${d.condition_name}</span>
+            <span class="text-slate-500 font-mono">${d.probability}%</span>
+          </div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div class="h-full rounded-full ${i === 0 ? 'bg-indigo-600' : 'bg-slate-300'}" style="width: ${d.probability}%"></div>
+          </div>
+        `;
+        diffContainer.appendChild(item);
+      });
+
+      // Feature Toggles List
+      renderFeatureToggles(data.grounded_features);
+
+      // Render Visual Canvas & SVG Overlays
+      drawDermoscopyCanvas();
+      renderSvgOverlays(data.grounded_features);
+
+      // 7-Point tab
+      document.getElementById('rulesScoreBadge').innerText = `Score: ${data.seven_point_checklist.cumulative_score} Points`;
+      const ruleBreakdown = document.getElementById('sevenPointBreakdown');
+      ruleBreakdown.innerHTML = '';
+      data.seven_point_checklist.breakdown.forEach(b => {
+        const p = document.createElement('div');
+        p.className = 'flex justify-between py-1 border-b border-slate-100';
+        p.innerHTML = `<span>• ${b.display_name} (${b.tier})</span><span class="font-bold text-indigo-600">+${b.points} pts</span>`;
+        ruleBreakdown.appendChild(p);
+      });
+
+      // ABCD
+      document.getElementById('abcdScoreBadge').innerText = `TDS: ${data.abcd_rule.total_dermoscopy_score}`;
+      document.getElementById('abcdInterpretation').innerText = data.abcd_rule.interpretation;
+
+      // Report Tab
+      document.getElementById('reportTextArea').value = data.clinical_narrative_report;
+    }
+
+    function renderFeatureToggles(features) {
+      const container = document.getElementById('featureToggleList');
+      container.innerHTML = '';
+      features.forEach((feat, idx) => {
+        const label = document.createElement('label');
+        label.className = 'flex items-center justify-between p-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg cursor-pointer text-xs transition';
+        label.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" ${feat.is_enabled !== false ? 'checked' : ''} onchange="toggleFeature(${idx})" class="accent-indigo-600 rounded">
+            <span class="w-3 h-3 rounded" style="background-color: ${feat.color_hex}"></span>
+            <span class="font-medium text-slate-800">${feat.label}</span>
+          </div>
+          <span class="text-slate-400 font-mono text-[11px]">${Math.round(feat.confidence * 100)}%</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    async function toggleFeature(index) {
+      if (!currentCaseData) return;
+      currentCaseData.grounded_features[index].is_enabled = !currentCaseData.grounded_features[index].is_enabled;
+
+      // Live Recalculate call to backend!
+      try {
+        const res = await fetch('/api/v1/dermoscopy/recalculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grounded_features: currentCaseData.grounded_features })
+        });
+        const updatedScore = await res.json();
+        currentCaseData.seven_point_checklist = updatedScore;
+
+        // Update UI
+        document.getElementById('rulesScoreBadge').innerText = `Score: ${updatedScore.cumulative_score} Points`;
+        document.getElementById('rxRecommendation').innerText = updatedScore.clinical_recommendation;
+        document.getElementById('riskBadgeText').innerText = `${updatedScore.risk_tier} · Live Recalculated`;
+
+        // Re-render SVG overlays
+        renderSvgOverlays(currentCaseData.grounded_features);
+      } catch (err) {
+        console.error("Recalculate error:", err);
+      }
+    }
+
+    function drawDermoscopyCanvas() {
+      const canvas = document.getElementById('lesionCanvas');
+      const ctx = canvas.getContext('2d');
+      // Draw simulated epiluminescence texture
+      ctx.fillStyle = '#E8C5A8';
+      ctx.fillRect(0, 0, 460, 460);
+
+      // Asymmetric melanocytic lesion
+      ctx.beginPath();
+      ctx.ellipse(230, 230, 160, 130, Math.PI / 6, 0, 2 * Math.PI);
+      ctx.fillStyle = '#7A482A';
+      ctx.fill();
+
+      // Pigment network lines
+      ctx.strokeStyle = '#432616';
+      ctx.lineWidth = 2;
+      for (let i = 120; i < 340; i += 22) {
+        ctx.beginPath();
+        ctx.moveTo(i, 140);
+        ctx.lineTo(i + 40, 320);
+        ctx.stroke();
+      }
+
+      // Blue-white veil zone
+      ctx.beginPath();
+      ctx.ellipse(190, 210, 60, 45, Math.PI / 4, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(160, 185, 205, 0.75)';
+      ctx.fill();
+    }
+
+    function renderSvgOverlays(features) {
+      const svg = document.getElementById('featureSvg');
+      const badges = document.getElementById('badgeContainer');
+      svg.innerHTML = '';
+      badges.innerHTML = '';
+
+      features.forEach(feat => {
+        if (feat.is_enabled === false) return;
+        const [ymin, xmin, ymax, xmax] = feat.box_2d;
+        const width = xmax - xmin;
+        const height = ymax - ymin;
+
+        // Rect
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', xmin);
+        rect.setAttribute('y', ymin);
+        rect.setAttribute('width', width);
+        rect.setAttribute('height', height);
+        rect.setAttribute('fill', feat.color_hex);
+        rect.setAttribute('fill-opacity', overlayOpacity);
+        rect.setAttribute('stroke', feat.color_hex);
+        rect.setAttribute('stroke-width', '0.005');
+        svg.appendChild(rect);
+
+        // Badge
+        const b = document.createElement('div');
+        b.className = 'absolute text-[10px] text-white px-1.5 py-0.5 rounded shadow pointer-events-auto transform -translate-y-full whitespace-nowrap font-medium';
+        b.style.top = `${ymin * 100}%`;
+        b.style.left = `${xmin * 100}%`;
+        b.style.backgroundColor = feat.color_hex;
+        b.innerText = `${feat.label} ${Math.round(feat.confidence * 100)}%`;
+        badges.appendChild(b);
+      });
+    }
+
+    function updateOpacity(val) {
+      overlayOpacity = parseFloat(val);
+      if (currentCaseData) renderSvgOverlays(currentCaseData.grounded_features);
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tabAssessment').classList.add('hidden');
+      document.getElementById('tabRules').classList.add('hidden');
+      document.getElementById('tabReport').classList.add('hidden');
+
+      document.getElementById('tabBtn1').className = 'text-sm font-semibold pb-1 text-slate-500 hover:text-slate-800';
+      document.getElementById('tabBtn2').className = 'text-sm font-semibold pb-1 text-slate-500 hover:text-slate-800';
+      document.getElementById('tabBtn3').className = 'text-sm font-semibold pb-1 text-slate-500 hover:text-slate-800';
+
+      if (tab === 'assessment') {
+        document.getElementById('tabAssessment').classList.remove('hidden');
+        document.getElementById('tabBtn1').className = 'text-sm font-bold pb-1 border-b-2 border-indigo-600 text-indigo-600';
+      } else if (tab === 'rules') {
+        document.getElementById('tabRules').classList.remove('hidden');
+        document.getElementById('tabBtn2').className = 'text-sm font-bold pb-1 border-b-2 border-indigo-600 text-indigo-600';
+      } else if (tab === 'report') {
+        document.getElementById('tabReport').classList.remove('hidden');
+        document.getElementById('tabBtn3').className = 'text-sm font-bold pb-1 border-b-2 border-indigo-600 text-indigo-600';
+      }
+    }
+
+    async function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('case_id', `CASE_${Date.now()}`);
+      formData.append('patient_id', 'PT-MANUAL-UPLOAD');
+      formData.append('anatomic_site', 'Cutaneous Lesion');
+
+      try {
+        const res = await fetch('/api/v1/dermoscopy/analyze', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Analysis failed');
+        }
+        const data = await res.json();
+        renderCase(data);
+      } catch (err) {
+        alert('Upload Error: ' + err.message);
+      }
+    }
+
+    function copyReport() {
+      const area = document.getElementById('reportTextArea');
+      navigator.clipboard.writeText(area.value);
+      alert('Clinical report copied to clipboard!');
+    }
+
+    function exportFhirJson() {
+      if (!currentCaseData || !currentCaseData.fhir_diagnostic_report) return;
+      const str = JSON.stringify(currentCaseData.fhir_diagnostic_report, null, 2);
+      const blob = new Blob([str], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FHIR_${currentCaseData.case_id}.json`;
+      a.click();
+    }
+
+    function signOffCase() {
+      alert(`Case ${currentCaseData ? currentCaseData.case_id : ''} approved and digitally signed by dermatologist! Ready for PACS / EHR sync.`);
+    }
+
+    // Auto load default Melanoma case on startup
+    window.onload = () => loadPresetCase('PT-94812');
+  </script>
+</body>
+</html>
