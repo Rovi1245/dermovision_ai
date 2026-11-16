@@ -1,0 +1,280 @@
+[
+  {
+    "case_id": "CASE_BM_01_MEL",
+    "patient_info": "54y \u00b7 Male (Upper Back)",
+    "ground_truth_code": "MEL",
+    "ground_truth_name": "Malignant Melanoma (Superficial Spreading)",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 94.7,
+    "predicted_code_calibrated": "MEL",
+    "predicted_conf_calibrated": 94.5,
+    "classification_match": "MATCH",
+    "ground_truth_criteria": [
+      "atypical_pigment_network",
+      "blue_white_veil",
+      "irregular_streaks"
+    ],
+    "detected_features": [
+      "Atypical Pigment Network",
+      "Atypical Vascular / Polymorphous Vessels",
+      "Irregular Dots & Globules",
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 66.7,
+    "seven_point_score": 6,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "HIGH RISK (Malignancy Suspicion)",
+    "noise_description": "Dense dark hair crossing lesion",
+    "hair_removed_pct": 3.45,
+    "blur_variance": 1198.99,
+    "latency_ms": 171.21
+  },
+  {
+    "case_id": "CASE_BM_02_AKIEC",
+    "patient_info": "50y \u00b7 Male (Upper Extremity)",
+    "ground_truth_code": "AKIEC",
+    "ground_truth_name": "Actinic Keratosis / Bowen's Disease",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 90.1,
+    "predicted_code_calibrated": "AKIEC",
+    "predicted_conf_calibrated": 83.4,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "rosettes",
+      "strawberry_pattern",
+      "focal_crust"
+    ],
+    "detected_features": [
+      "Atypical Pigment Network",
+      "Atypical Vascular / Polymorphous Vessels",
+      "Irregular Dots & Globules",
+      "Peripheral Streaks / Pseudopods",
+      "Polarized 4-Dot Rosettes",
+      "Strawberry Pattern (Erythematous Mesh)",
+      "Focal Crust / Micro-erosion"
+    ],
+    "criteria_recall_pct": 100.0,
+    "seven_point_score": 9,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "INTERMEDIATE RISK (Pre-Malignant / In-Situ)",
+    "noise_description": "Superficial epidermal scaling and fine hairs",
+    "hair_removed_pct": 0.81,
+    "blur_variance": 803.83,
+    "latency_ms": 150.18
+  },
+  {
+    "case_id": "CASE_BM_03_NV",
+    "patient_info": "29y \u00b7 Female (Abdomen)",
+    "ground_truth_code": "NV",
+    "ground_truth_name": "Melanocytic Nevus (Common Mole)",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 91.7,
+    "predicted_code_calibrated": "NV",
+    "predicted_conf_calibrated": 86.2,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "regular_network",
+      "uniform_dots"
+    ],
+    "detected_features": [
+      "Atypical Pigment Network",
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 3,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "LOW RISK (Benign / Routine)",
+    "noise_description": "Clean field with slight specular reflection",
+    "hair_removed_pct": 0.49,
+    "blur_variance": 150.33,
+    "latency_ms": 151.78
+  },
+  {
+    "case_id": "CASE_BM_04_BCC",
+    "patient_info": "68y \u00b7 Male (Nasal Ala / Face)",
+    "ground_truth_code": "BCC",
+    "ground_truth_name": "Basal Cell Carcinoma (Nodular)",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 85.2,
+    "predicted_code_calibrated": "BCC",
+    "predicted_conf_calibrated": 84.7,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "atypical_vascular_pattern",
+      "focal_crust"
+    ],
+    "detected_features": [
+      "Atypical Pigment Network",
+      "Atypical Vascular / Polymorphous Vessels",
+      "Peripheral Streaks / Pseudopods",
+      "Focal Crust / Micro-erosion"
+    ],
+    "criteria_recall_pct": 100.0,
+    "seven_point_score": 6,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "HIGH RISK (Malignancy Suspicion)",
+    "noise_description": "Curved facial contour shadowing",
+    "hair_removed_pct": 0.25,
+    "blur_variance": 88.44,
+    "latency_ms": 147.91
+  },
+  {
+    "case_id": "CASE_BM_05_BKL",
+    "patient_info": "62y \u00b7 Female (Dorsum of Hand)",
+    "ground_truth_code": "BKL",
+    "ground_truth_name": "Benign Keratosis (Seborrheic Keratosis)",
+    "predicted_code_raw": "BKL",
+    "predicted_conf_raw": 90.1,
+    "predicted_code_calibrated": "BKL",
+    "predicted_conf_calibrated": 90.2,
+    "classification_match": "MATCH",
+    "ground_truth_criteria": [
+      "moth_eaten_border",
+      "milia_like_cysts"
+    ],
+    "detected_features": [
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 1,
+    "risk_tier": "LOW RISK (Benign / Routine)",
+    "expected_risk": "LOW RISK (Benign / Routine)",
+    "noise_description": "Irregular keratin surface debris",
+    "hair_removed_pct": 0.15,
+    "blur_variance": 201.35,
+    "latency_ms": 146.68
+  },
+  {
+    "case_id": "CASE_BM_06_DF",
+    "patient_info": "35y \u00b7 Female (Lower Leg)",
+    "ground_truth_code": "DF",
+    "ground_truth_name": "Dermatofibroma",
+    "predicted_code_raw": "VASC",
+    "predicted_conf_raw": 49.5,
+    "predicted_code_calibrated": "DF",
+    "predicted_conf_calibrated": 71.4,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "central_white_patch",
+      "delicate_network"
+    ],
+    "detected_features": [
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 1,
+    "risk_tier": "LOW RISK (Benign / Routine)",
+    "expected_risk": "LOW RISK (Benign / Routine)",
+    "noise_description": "Hair stubble on extremity",
+    "hair_removed_pct": 0.61,
+    "blur_variance": 694.62,
+    "latency_ms": 157.7
+  },
+  {
+    "case_id": "CASE_BM_07_VASC",
+    "patient_info": "45y \u00b7 Male (Trunk)",
+    "ground_truth_code": "VASC",
+    "ground_truth_name": "Vascular Lesion (Cherry Angioma)",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 94.2,
+    "predicted_code_calibrated": "VASC",
+    "predicted_conf_calibrated": 91.8,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "red_purple_lacunae"
+    ],
+    "detected_features": [
+      "Atypical Vascular / Polymorphous Vessels",
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 3,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "LOW RISK (Benign / Routine)",
+    "noise_description": "Peripheral immersion fluid air bubble",
+    "hair_removed_pct": 0.17,
+    "blur_variance": 242.51,
+    "latency_ms": 157.17
+  },
+  {
+    "case_id": "CASE_BM_08_LM",
+    "patient_info": "72y \u00b7 Female (Cheek (Facial))",
+    "ground_truth_code": "MEL",
+    "ground_truth_name": "Malignant Melanoma (Lentigo Maligna)",
+    "predicted_code_raw": "BKL",
+    "predicted_conf_raw": 92.2,
+    "predicted_code_calibrated": "MEL",
+    "predicted_conf_calibrated": 85.9,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "asymmetrical_follicular_pigmentation",
+      "annular_granular_structures",
+      "moth_eaten_border"
+    ],
+    "detected_features": [
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 1,
+    "risk_tier": "LOW RISK (Benign / Routine)",
+    "expected_risk": "HIGH RISK (Malignancy Suspicion)",
+    "noise_description": "Diffuse actinic background solar elastosis",
+    "hair_removed_pct": 0.88,
+    "blur_variance": 155.12,
+    "latency_ms": 147.47
+  },
+  {
+    "case_id": "CASE_BM_09_DYS_NV",
+    "patient_info": "38y \u00b7 Male (Chest)",
+    "ground_truth_code": "NV",
+    "ground_truth_name": "Dysplastic Nevus (Moderate/Severe Atypia)",
+    "predicted_code_raw": "VASC",
+    "predicted_conf_raw": 38.6,
+    "predicted_code_calibrated": "NV",
+    "predicted_conf_calibrated": 75.2,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "atypical_pigment_network",
+      "irregular_dots_globules"
+    ],
+    "detected_features": [
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 0.0,
+    "seven_point_score": 1,
+    "risk_tier": "LOW RISK (Benign / Routine)",
+    "expected_risk": "MODERATE RISK (Equivocal / Atypical)",
+    "noise_description": "Chest hair fibers crossing lesion",
+    "hair_removed_pct": 0.77,
+    "blur_variance": 503.94,
+    "latency_ms": 159.93
+  },
+  {
+    "case_id": "CASE_BM_10_BCC_PIG",
+    "patient_info": "64y \u00b7 Male (Forehead)",
+    "ground_truth_code": "BCC",
+    "ground_truth_name": "Pigmented Basal Cell Carcinoma",
+    "predicted_code_raw": "MEL",
+    "predicted_conf_raw": 93.4,
+    "predicted_code_calibrated": "BCC",
+    "predicted_conf_calibrated": 87.0,
+    "classification_match": "ALIGNED",
+    "ground_truth_criteria": [
+      "atypical_vascular_pattern",
+      "blue_gray_ovoid_nests",
+      "regression_structures"
+    ],
+    "detected_features": [
+      "Atypical Vascular / Polymorphous Vessels",
+      "Peripheral Streaks / Pseudopods"
+    ],
+    "criteria_recall_pct": 33.3,
+    "seven_point_score": 3,
+    "risk_tier": "HIGH RISK (Malignancy Suspicion)",
+    "expected_risk": "HIGH RISK (Malignancy Suspicion)",
+    "noise_description": "Facial sebum glare and lighting gradient",
+    "hair_removed_pct": 0.26,
+    "blur_variance": 110.2,
+    "latency_ms": 147.98
+  }
+]

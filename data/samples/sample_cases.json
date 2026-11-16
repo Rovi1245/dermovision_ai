@@ -1,0 +1,39 @@
+{
+  "ISIC_0024468": {
+    "case_id": "ISIC_0024468",
+    "lesion_id": "HAM_0006301",
+    "patient_id": "PT-ISIC-24468",
+    "patient_demographics": "50y · Male",
+    "anatomic_site": "Upper Extremity",
+    "phototype": "Type II",
+    "mode": "Polarized",
+    "ground_truth_diagnosis_code": "AKIEC",
+    "ground_truth_diagnosis_name": "Actinic Keratosis / Intraepidermal Carcinoma (Bowen's Disease)",
+    "ground_truth_criteria": [
+      "rosettes",
+      "strawberry_pattern",
+      "focal_crust"
+    ],
+    "description": "Classical strawberry pattern (diffuse background erythema sparing adnexal ostia), follicular keratotic clods, superficial white-yellow scaling, and distinct rosette signs under polarized light."
+  },
+  "PT-94812": {
+    "case_id": "CASE_20261113_0842",
+    "lesion_id": "HAM_0007812",
+    "patient_id": "PT-94812",
+    "patient_demographics": "54y · Male",
+    "anatomic_site": "Upper Back (Left Scapular Region)",
+    "phototype": "Type II",
+    "mode": "Polarized",
+    "ground_truth_diagnosis_code": "MEL",
+    "ground_truth_diagnosis_name": "Malignant Melanoma (Superficial Spreading)",
+    "ground_truth_criteria": [
+      "atypical_pigment_network",
+      "blue_white_veil",
+      "atypical_vascular_pattern",
+      "irregular_streaks",
+      "irregular_dots_globules",
+      "regression_structures"
+    ],
+    "description": "Malignant melanocytic neoplasm characterized by intraepidermal pagetoid scatter, asymmetric atypical pigment network, and blue-white veil."
+  }
+}
