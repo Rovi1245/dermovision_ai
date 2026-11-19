@@ -18,13 +18,19 @@ class DullRazor:
             cv2.MORPH_RECT, (self.kernel_size, self.kernel_size)
         )
 
+    # Minimum artifact coverage to justify inpainting (1% of image area)
+    _INPAINT_THRESHOLD = 0.01
+
     def process(self, image_bgr: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
         """
-        Processes dermoscopy image.
+        Processes dermoscopy image. Inpainting is only applied when detected
+        hair/artifact coverage exceeds 1% of the image — clean images pass
+        through unchanged to avoid morphological distortion of lesion texture.
+
         Returns:
-            cleaned_bgr: Inpainted tissue image.
+            cleaned_bgr: Inpainted tissue image (or original if no artifacts).
             hair_mask: Binary mask of removed artifacts.
-            artifact_ratio: Percentage of image area occupied by artifacts.
+            artifact_ratio: Percentage of image area occupied by artifacts (0–1).
         """
         if image_bgr is None or image_bgr.size == 0:
             raise ValueError("Invalid image supplied to DullRazor.")
@@ -39,11 +45,15 @@ class DullRazor:
         # 3. Binary thresholding to isolate hair fibers
         _, hair_mask = cv2.threshold(blackhat, self.threshold_val, 255, cv2.THRESH_BINARY)
 
-        # 4. Inpainting using Telea method
-        cleaned_bgr = cv2.inpaint(
-            image_bgr, hair_mask, inpaintRadius=self.inpaint_radius, flags=cv2.INPAINT_TELEA
-        )
-
         artifact_ratio = float(np.count_nonzero(hair_mask)) / float(hair_mask.size)
+
+        # 4. Conditional inpainting — skip for clean images to prevent texture distortion
+        if artifact_ratio >= self._INPAINT_THRESHOLD:
+            cleaned_bgr = cv2.inpaint(
+                image_bgr, hair_mask, inpaintRadius=self.inpaint_radius, flags=cv2.INPAINT_TELEA
+            )
+        else:
+            # Pass raw pixels through unchanged — no morphological closing applied
+            cleaned_bgr = image_bgr.copy()
 
         return cleaned_bgr, hair_mask, artifact_ratio

@@ -110,17 +110,33 @@ class DiseaseClassifier:
             }
 
         # -------------------------------------------------------------
-        # 2. Concept Bottleneck Prior Gating (7-Point Clinical Calibration)
+        # 2. Non-Melanocytic Class Pre-Filter (runs BEFORE 7-pt checklist)
         # -------------------------------------------------------------
-        # If visual 7-Point score >= 3, mathematically calibrate malignancy probability
-        if seven_point_score >= 3:
-            mel_boost = min(0.95, max(raw_probs.get("MEL", 0.1), 0.65 + (seven_point_score * 0.06)))
+        # If the ViT already strongly predicts a non-melanocytic class (VASC, BKL, DF),
+        # skip the 7-point calibration entirely — the ViT is correct on these.
+        top_vit_code = max(raw_probs, key=raw_probs.get)
+        top_vit_prob = raw_probs[top_vit_code]
+        NON_MELANOCYTIC = {"VASC", "BKL", "DF"}
+
+        skip_seven_pt_override = (
+            top_vit_code in NON_MELANOCYTIC and top_vit_prob >= 0.50
+        )
+
+        # -------------------------------------------------------------
+        # 3. 7-Point Clinical Calibration (ONLY for genuinely ambiguous cases)
+        # -------------------------------------------------------------
+        # Only runs when: (a) ViT is NOT already confident about a non-melanocytic class
+        # AND (b) the 7-Point score truly is elevated.
+        # This decouples the clinical checklist from overriding correct ViT predictions.
+        if not skip_seven_pt_override and seven_point_score >= 3:
+            # Apply a soft upward nudge to MEL — but cap it so the ViT can still win
+            mel_boost = min(0.75, max(raw_probs.get("MEL", 0.1), 0.45 + (seven_point_score * 0.04)))
             raw_probs["MEL"] = mel_boost
-            raw_probs["NV"] = min(0.10, raw_probs.get("NV", 0.5) * 0.2)
-            raw_probs["BCC"] = min(0.08, raw_probs.get("BCC", 0.1) * 0.2)
-            raw_probs["AKIEC"] = min(0.08, raw_probs.get("AKIEC", 0.1) * 0.2)
-            raw_probs["VASC"] = min(0.05, raw_probs.get("VASC", 0.1) * 0.1)
-            raw_probs["BKL"] = min(0.05, raw_probs.get("BKL", 0.1) * 0.1)
+            # Do NOT suppress other classes to near-zero; apply a gentle dampening only
+            raw_probs["NV"] = min(raw_probs.get("NV", 0.5), 0.25)
+            raw_probs["BCC"] = min(raw_probs.get("BCC", 0.1), 0.20)
+            raw_probs["AKIEC"] = min(raw_probs.get("AKIEC", 0.1), 0.20)
+            # VASC and BKL are NEVER suppressed by 7-pt score alone
         elif any(f.get("criterion_id") in ["rosettes", "strawberry_pattern"] for f in detected_features):
             raw_probs["AKIEC"] = max(0.88, raw_probs.get("AKIEC", 0.3))
             raw_probs["BCC"] = 0.05

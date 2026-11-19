@@ -98,10 +98,22 @@ class FeatureDetector:
             conf = min(0.96, 0.70 + (veil_ratio * 4.0))
             features.append(self._create_feature("blue_white_veil", [ymin, xmin, ymax, xmax], conf))
 
-        # Atypical Vascular / Polymorphous Vessels & Erythema
-        vascular_mask = (a_chan > 145) & (thresh > 0)
-        vasc_ratio = float(np.count_nonzero(vascular_mask)) / float(h * w)
-        if vasc_ratio > 0.02:
+        # ------------------------------------------------------------------
+        # Lesion interior mask: erode the Otsu contour by ~15% to exclude
+        # perilesional skin from all feature measurements.
+        # ------------------------------------------------------------------
+        lesion_interior = cv2.erode(thresh, cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE, (max(3, int(min(h, w) * 0.15)), max(3, int(min(h, w) * 0.15)))
+        ))
+
+        # Atypical Vascular / Polymorphous Vessels
+        # FIX: Raised a* threshold (145→168) to exclude normal skin erythema & warm WB.
+        # FIX: Minimum lesion coverage raised from 2% → 6% (diffuse redness must be focal).
+        # FIX: Restrict detection to lesion interior only (excludes perilesional skin flush).
+        vascular_mask = (a_chan > 168) & (lesion_interior > 0)
+        lesion_interior_area = max(1, float(np.count_nonzero(lesion_interior)))
+        vasc_ratio = float(np.count_nonzero(vascular_mask)) / lesion_interior_area
+        if vasc_ratio > 0.06:
             ys, xs = np.where(vascular_mask)
             ymin, ymax = float(np.min(ys)) / h, float(np.max(ys)) / h
             xmin, xmax = float(np.min(xs)) / w, float(np.max(xs)) / w
@@ -109,9 +121,12 @@ class FeatureDetector:
             features.append(self._create_feature("atypical_vascular_pattern", [ymin, xmin, ymax, xmax], conf))
 
         # Atypical Pigment Network Detection
+        # FIX: Raised network density threshold (0.03→0.09) — normal mole texture, seborrheic
+        # keratosis ridges, and solar lentigines all sit at 0.03–0.07; true atypical network > 0.09.
+        # FIX: Restrict Canny edges to lesion interior only (excludes hair-inpainting streaks).
         edges = cv2.Canny(gray, 40, 120)
-        network_density = float(np.count_nonzero(edges & thresh)) / float(h * w)
-        if network_density > 0.03:
+        network_density = float(np.count_nonzero(edges & lesion_interior)) / lesion_interior_area
+        if network_density > 0.09:
             ymin = max(0.05, float(cy - int(h * 0.28)) / h)
             ymax = min(0.95, float(cy + int(h * 0.28)) / h)
             xmin = max(0.05, float(cx - int(w * 0.28)) / w)

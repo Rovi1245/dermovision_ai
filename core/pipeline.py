@@ -66,10 +66,25 @@ class DermoscopyPipeline:
         # STAGE 3A: CLINICAL REASONING & ALGORITHMIC SCORING
         # -------------------------------------------------------------
         seven_pt = SevenPointChecklistEngine.evaluate(features)
+
+        # Non-melanocytic pre-filter: if detected features include class-specific
+        # markers for VASC, BKL, or DF, skip the 7-Point checklist score when
+        # computing ABCD — these classes don't follow melanoma scoring rules.
+        NON_MELANOCYTIC_FEATURES = {
+            "red_purple_lacunae",   # VASC-specific
+            "milia_like_cysts",     # BKL-specific
+            "central_white_patch",  # DF-specific
+        }
+        detected_criterion_ids = {f.get("criterion_id") for f in features}
+        is_non_melanocytic = bool(detected_criterion_ids & NON_MELANOCYTIC_FEATURES)
+
+        # Use seven_pt score for ABCD only when it's a plausible melanocytic lesion
+        effective_7pt = seven_pt["cumulative_score"] if not is_non_melanocytic else 0
+
         abcd = ABCDRuleEngine.evaluate(
-            asymmetry_score=2 if seven_pt["cumulative_score"] >= 3 else 1,
-            border_abrupt_segments=5 if seven_pt["cumulative_score"] >= 3 else 2,
-            color_count=4 if seven_pt["cumulative_score"] >= 3 else 2,
+            asymmetry_score=2 if effective_7pt >= 3 else 1,
+            border_abrupt_segments=5 if effective_7pt >= 3 else 2,
+            color_count=4 if effective_7pt >= 3 else 2,
             structures_count=min(5, len(features))
         )
 
