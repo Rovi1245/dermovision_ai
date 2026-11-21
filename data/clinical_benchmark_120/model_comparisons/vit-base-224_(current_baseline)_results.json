@@ -1,0 +1,40 @@
+{
+  "model_name": "ViT-Base-224 (Current Baseline)",
+  "model_id": "models/weights/ham10000_vit",
+  "parameters_m": 85.8,
+  "overall_accuracy_percent": 80.83,
+  "balanced_accuracy_percent": 82.14,
+  "malignant_sensitivity_percent": 80.0,
+  "benign_specificity_percent": 81.43,
+  "vasc_false_melanoma_rate_percent": 0.0,
+  "bkl_false_melanoma_rate_percent": 0.0,
+  "per_class_recall_percent": {
+    "MEL": 60.0,
+    "NV": 85.0,
+    "BKL": 70.0,
+    "VASC": 93.3,
+    "BCC": 100.0,
+    "AKIEC": 86.7,
+    "DF": 80.0
+  },
+  "class_correct": {
+    "MEL": 12,
+    "NV": 17,
+    "BKL": 14,
+    "VASC": 14,
+    "BCC": 15,
+    "AKIEC": 13,
+    "DF": 12
+  },
+  "class_total": {
+    "MEL": 20,
+    "NV": 20,
+    "BKL": 20,
+    "VASC": 15,
+    "BCC": 15,
+    "AKIEC": 15,
+    "DF": 15
+  },
+  "mean_latency_ms": 87.09,
+  "total_eval_time_s": 10.76
+}

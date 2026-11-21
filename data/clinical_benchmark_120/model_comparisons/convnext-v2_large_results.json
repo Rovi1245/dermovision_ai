@@ -1,0 +1,40 @@
+{
+  "model_name": "ConvNeXt-V2 Large",
+  "model_id": "ALM-AHME/convnextv2-large-1k-224-finetuned-Lesion-Classification-HAM10000-AH-60-20-20",
+  "parameters_m": 196.4,
+  "overall_accuracy_percent": 70.83,
+  "balanced_accuracy_percent": 72.37,
+  "malignant_sensitivity_percent": 72.0,
+  "benign_specificity_percent": 70.0,
+  "vasc_false_melanoma_rate_percent": 0.0,
+  "bkl_false_melanoma_rate_percent": 15.0,
+  "per_class_recall_percent": {
+    "MEL": 70.0,
+    "NV": 40.0,
+    "BKL": 70.0,
+    "VASC": 93.3,
+    "BCC": 73.3,
+    "AKIEC": 73.3,
+    "DF": 86.7
+  },
+  "class_correct": {
+    "MEL": 14,
+    "NV": 8,
+    "BKL": 14,
+    "VASC": 14,
+    "BCC": 11,
+    "AKIEC": 11,
+    "DF": 13
+  },
+  "class_total": {
+    "MEL": 20,
+    "NV": 20,
+    "BKL": 20,
+    "VASC": 15,
+    "BCC": 15,
+    "AKIEC": 15,
+    "DF": 15
+  },
+  "mean_latency_ms": 112.97,
+  "total_eval_time_s": 14.04
+}
